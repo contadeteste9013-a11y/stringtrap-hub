@@ -1,7 +1,7 @@
 -- ============================================================
 --  STRINGTRAP HUB
 -- ============================================================
-local ANTIBAN_URL = "https://raw.githubusercontent.com/contadeteste9013-a11y/stringtrap-hub/main/stringtrap.lua"
+local ANTIBAN_URL = "https://raw.githubusercontent.com/contadeteste9013-a11y/stringtrap-hub/refs/heads/main/stringtrap.lua"
 local ANTIBAN_MIN = 30
 local ANTIBAN_MAX = 40
 
