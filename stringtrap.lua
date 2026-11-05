@@ -1,6 +1,5 @@
 -- ============================================================
---  STRINGTRAP HUB - BLOX FRUITS (UPDATE 30 / HALLOWEEN 2026)
---  Compatível com Delta Executor & Mobile (FIXED)
+--  STRINGTRAP HUB - UPDATE 30 / HALLOWEEN 2026 (FIXED)
 -- ============================================================
 local ANTIBAN_URL = "https://raw.githubusercontent.com/contadeteste9013-a11y/stringtrap-hub/refs/heads/main/stringtrap.lua"
 local ANTIBAN_MIN = 30
@@ -19,35 +18,22 @@ local p       = Players.LocalPlayer
 local pGui    = p:WaitForChild("PlayerGui")
 
 if pGui:FindFirstChild("StringtrapHub") then pGui.StringtrapHub:Destroy() end
-
 local getgenv = getgenv or function() return _G end
 
 local cfg = {
     unlocked = false, showStatusBar = true, selectedWeapon = "Melee",
-    fastAttack = true, fastAttackMode = "Fast Attack (RegisterHits)", fastAttackDelay = 0.08,
-    attackNoAnim = true, autoClick = false, autoTurnOnBuso = true, autoKen = false, autoV3 = false, autoV4 = false,
-    farmMethod = "Level Farm", distanceFarmAura = 300, startFarm = false, autoQuest = true,
-    autoEquipWeapon = true, farmMastery = false, masteryMethod = "Melee", bringMobs = true,
-    autoHalloweenEvent = false, farmPumpkins = false, prioritizeBossGreatPumpkin = false,
-    skipJackOfLantern = false, autoTrickOrTreat = false, autoGreatPumpkinBoss = false,
-    summonGreatPumpkin = false, autoGachaHalloween = false, autoRollSpookyGacha = false,
-    autoCloseGachaUI = true, spookyGachaAllowSilverKey = false, autoCandyGravePumpkinHunt = false,
-    mysteryHallSolver = false, autoBreakGraveUnlockEgg = false, sweetRiddleSolver = false,
-    travelViaHalloweenPortal = false, witchCauldronAuto = false, autoFarmMagnetToken = false,
-    autoRollMagnetGacha = false, selectedTeam = "Pirates", noclip = false, selectedIsland = 1,
-    selectedSea = "Sea 1", selectedRaid = "Flame", autoRaid = false, fastMode = false, noRender = false,
+    fastAttack = true, fastAttackDelay = 0.08, attackNoAnim = true,
+    autoClick = false, autoTurnOnBuso = true, autoKen = false,
+    startFarm = false, autoQuest = true, autoEquipWeapon = true,
+    bringMobs = true, distanceFarmAura = 300, farmMastery = false,
+    farmPumpkins = false, autoHalloweenEvent = false, autoTrickOrTreat = false,
+    autoGachaHalloween = false, autoRollSpookyGacha = false, spookyGachaAllowSilverKey = false,
+    autoCloseGachaUI = true, summonGreatPumpkin = false,
+    selectedTeam = "Pirates", noclip = false, fastMode = false, noRender = false,
 }
 
 local KEY = "williamafton2026"
 local IMG = "rbxassetid://77611955682353"
-
-local function detectCurrentSea()
-    local pid = game.PlaceId
-    if pid == 4442272183 then return "Sea 2"
-    elseif pid == 7449423635 then return "Sea 3" end
-    return "Sea 1"
-end
-cfg.selectedSea = detectCurrentSea()
 
 local autoReload = false
 if getgenv().StringtrapHub_AutoReload == true then
@@ -64,20 +50,17 @@ local function hopServer()
     local TeleportService = game:GetService("TeleportService")
     local HttpService = game:GetService("HttpService")
     local ok, res = pcall(function()
-        local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-        return HttpService:JSONDecode(game:HttpGet(url))
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
     if not ok or not res or not res.data then
-        pcall(function() TeleportService:Teleport(game.PlaceId, p) end)
-        return true, "rejoin"
+        pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin"
     end
     local candidates = {}
     for _, s in ipairs(res.data) do
         if s.id ~= game.JobId and s.playing < s.maxPlayers then table.insert(candidates, s) end
     end
     if #candidates == 0 then
-        pcall(function() TeleportService:Teleport(game.PlaceId, p) end)
-        return true, "rejoin"
+        pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin"
     end
     table.sort(candidates, function(a, b) return a.playing < b.playing end)
     local target = candidates[1]
@@ -87,7 +70,6 @@ local function hopServer()
 end
 
 local function getEnemies() return workspace:FindFirstChild("Enemies") end
-
 local function invokeCommF(...)
     local remotes = rs:FindFirstChild("Remotes")
     local commF = remotes and remotes:FindFirstChild("CommF_")
@@ -95,7 +77,13 @@ local function invokeCommF(...)
     return false, "CommF_ não encontrado"
 end
 
-local QuestsData = {
+-- TELEPORTE BLINDADO (Evita o personagem voltar/tremer)
+local function absoluteTP(hrp, targetCFrame)
+    pcall(function() hrp:SetNetworkOwner(p) end)
+    hrp.CFrame = targetCFrame
+    hrp.Velocity = Vector3.new(0, 0, 0)
+    hrp.RotVelocity = Vector3.new(0, 0, 0)
+endlocal QuestsData = {
     {1, "BanditQuest1", CFrame.new(1059, 16, 1549), "Bandit", CFrame.new(1145, 17, 1630), 1},
     {10, "JungleQuest", CFrame.new(-1598, 36, 153), "Monkey", CFrame.new(-1442, 61, 38), 1},
     {15, "JungleQuest", CFrame.new(-1598, 36, 153), "Gorilla", CFrame.new(-1240, 6, -490), 2},
@@ -116,44 +104,26 @@ local QuestsData = {
     {375, "FishmanQuest", CFrame.new(61122, 18, 1569), "Fishman Warrior", CFrame.new(60880, 18, 1500), 1},
     {400, "FishmanQuest", CFrame.new(61122, 18, 1569), "Fishman Commando", CFrame.new(61800, 18, 1450), 2},
     {450, "SkyExp1Quest", CFrame.new(-4721, 845, -1954), "God's Guard", CFrame.new(-4650, 845, -1900), 1},
-    {525, "SkyExp2Quest", CFrame.new(-7903, 5635, -1412), "Royal Squad", CFrame.new(-7663, 5610, -1443), 1},
     {625, "FountainQuest", CFrame.new(5259, 38, 4050), "Galley Pirate", CFrame.new(5360, 38, 4120), 1},
-    {650, "FountainQuest", CFrame.new(5259, 38, 4050), "Galley Captain", CFrame.new(5650, 38, 4950), 2},
     {700, "Area1Quest", CFrame.new(-427, 72, 1835), "Raider", CFrame.new(-220, 72, 1950), 1},
-    {725, "Area1Quest", CFrame.new(-427, 72, 1835), "Mercenary", CFrame.new(-380, 72, 1500), 2},
     {775, "Area2Quest", CFrame.new(-775, 73, 865), "Swan Pirate", CFrame.new(-920, 73, 1020), 1},
-    {800, "Area2Quest", CFrame.new(-775, 73, 865), "Factory Staff", CFrame.new(600, 80, 200), 2},
     {875, "MarineQuest3", CFrame.new(-2440, 73, -3218), "Marine Lieutenant", CFrame.new(-2280, 73, -3100), 1},
-    {900, "MarineQuest3", CFrame.new(-2440, 73, -3218), "Marine Captain", CFrame.new(-2100, 73, -3300), 2},
     {950, "ZombieQuest", CFrame.new(-5495, 48, -794), "Zombie", CFrame.new(-5560, 48, -700), 1},
-    {1000, "ZombieQuest", CFrame.new(-5495, 48, -794), "Vampire", CFrame.new(-6000, 6, -1300), 2},
     {1050, "SnowMountainQuest", CFrame.new(607, 401, -5370), "Snow Trooper", CFrame.new(520, 401, -5250), 1},
-    {1100, "SnowMountainQuest", CFrame.new(607, 401, -5370), "Winter Warrior", CFrame.new(1150, 430, -5180), 2},
     {1150, "IceSideQuest", CFrame.new(-6060, 15, -4902), "Lab Subordinate", CFrame.new(-6200, 15, -4800), 1},
-    {1175, "IceSideQuest", CFrame.new(-6060, 15, -4902), "Horned Warrior", CFrame.new(-6400, 15, -5800), 2},
     {1250, "ShipQuest1", CFrame.new(923, 125, 32852), "Ship Deckhand", CFrame.new(910, 125, 33000), 1},
-    {1275, "ShipQuest1", CFrame.new(923, 125, 32852), "Ship Engineer", CFrame.new(850, 125, 33200), 2},
     {1350, "FrostQuest", CFrame.new(5505, 28, -6225), "Arctic Warrior", CFrame.new(5650, 28, -6300), 1},
     {1425, "ForgottenQuest", CFrame.new(-3054, 236, -10148), "Sea Soldier", CFrame.new(-3150, 236, -10000), 1},
-    {1450, "ForgottenQuest", CFrame.new(-3054, 236, -10148), "Water Fighter", CFrame.new(-3400, 236, -10500), 2},
     {1500, "PiratePortQuest", CFrame.new(-290, 43, 5430), "Pirate Millionaire", CFrame.new(-450, 73, 5550), 1},
-    {1525, "PiratePortQuest", CFrame.new(-290, 43, 5430), "Pistol Billionaire", CFrame.new(-200, 73, 5900), 2},
     {1575, "AmazonQuest", CFrame.new(5210, 604, 345), "Dragon Crew Warrior", CFrame.new(5100, 604, 480), 1},
-    {1600, "AmazonQuest", CFrame.new(5210, 604, 345), "Dragon Crew Archer", CFrame.new(6200, 604, 200), 2},
     {1700, "MarineTreeIsland", CFrame.new(2192, 28, -6732), "Marine Commodore", CFrame.new(2350, 28, -6600), 1},
-    {1725, "MarineTreeIsland", CFrame.new(2192, 28, -6732), "Marine Rear Admiral", CFrame.new(2600, 28, -7000), 2},
     {1775, "DeepForestIsland", CFrame.new(-13275, 332, -7768), "Forest Pirate", CFrame.new(-13400, 332, -7600), 1},
-    {1800, "DeepForestIsland", CFrame.new(-13275, 332, -7768), "Mythological Pirate", CFrame.new(-13600, 332, -7000), 2},
     {1975, "HauntedQuest1", CFrame.new(-9515, 142, 6078), "Reborn Skeleton", CFrame.new(-9504, 172, 6050), 1},
-    {2000, "HauntedQuest1", CFrame.new(-9515, 142, 6078), "Living Zombie", CFrame.new(-9700, 172, 6200), 2},
     {2075, "TreatQuest1", CFrame.new(-2020, 38, -12026), "Cookie Crafter", CFrame.new(-1900, 38, -11900), 1},
-    {2100, "TreatQuest1", CFrame.new(-2020, 38, -12026), "Cake Guard", CFrame.new(-1600, 38, -12400), 2},
-    {2200, "TreatQuest2", CFrame.new(-2020, 38, -12026), "Baking Staff", CFrame.new(-1800, 38, -12800), 1},
-    {2225, "TreatQuest2", CFrame.new(-2020, 38, -12026), "Head Baker", CFrame.new(-2100, 38, -13000), 2},
     {2450, "TikiQuest1", CFrame.new(-16547, 55, -173), "Isle Outlaw", CFrame.new(-16400, 55, -100), 1},
-    {2500, "TikiQuest1", CFrame.new(-16547, 55, -173), "Island Boy", CFrame.new(-16600, 55, -300), 2},
-    {2550, "TikiQuest2", CFrame.new(-16547, 55, -173), "Sun-kissed Warrior", CFrame.new(-16800, 55, -500), 1},
-} local function getPlayerLevel()
+}
+
+local function getPlayerLevel()
     local d = p:FindFirstChild("Data")
     if d and d:FindFirstChild("Level") then return d.Level.Value end
     return 1
@@ -176,16 +146,16 @@ local function hasActiveQuest()
     return false
 end
 
-local function equipTool(toolType)
+local function equipTool()
     if not p.Character then return end
     local char = p.Character
     for _, t in pairs(char:GetChildren()) do
-        if t:IsA("Tool") and t:FindFirstChild("ToolTip") and t.ToolTip == toolType then return t end
+        if t:IsA("Tool") and t:FindFirstChild("ToolTip") and t.ToolTip == cfg.selectedWeapon then return t end
     end
     local bp = p:FindFirstChild("Backpack")
     if bp then
         for _, t in pairs(bp:GetChildren()) do
-            if t:IsA("Tool") and t:FindFirstChild("ToolTip") and t.ToolTip == toolType then
+            if t:IsA("Tool") and t:FindFirstChild("ToolTip") and t.ToolTip == cfg.selectedWeapon then
                 t.Parent = char; return t
             end
         end
@@ -194,7 +164,7 @@ end
 
 local function doFastAttack()
     if not p.Character or not p.Character:FindFirstChild("HumanoidRootPart") then return end
-    equipTool(cfg.selectedWeapon)
+    equipTool()
 
     local hitTargets = {}
     local hrp = p.Character.HumanoidRootPart
@@ -212,17 +182,13 @@ local function doFastAttack()
 
     if #hitTargets > 0 then
         pcall(function()
-            local activeTool = p.Character:FindFirstChildOfClass("Tool")
-            if activeTool then
-                if rs.Remotes:FindFirstChild("Validator") then
-                    rs.Remotes.Validator:FireServer(math.floor(tick()))
-                end
+            if p.Character:FindFirstChildOfClass("Tool") then
+                if rs.Remotes:FindFirstChild("Validator") then rs.Remotes.Validator:FireServer(math.floor(tick())) end
                 local hitRemote = rs:FindFirstChild("Hit", true) or rs.Remotes:FindFirstChild("RegisterHit")
                 if hitRemote then hitRemote:FireServer(hitTargets[1], hitTargets) end
             end
         end)
     end
-
     pcall(function()
         if vim and vim.SendMouseButtonEvent then
             vim:SendMouseButtonEvent(0, 0, 0, true, game, 1); task.wait(0.01); vim:SendMouseButtonEvent(0, 0, 0, false, game, 1)
@@ -230,9 +196,7 @@ local function doFastAttack()
             vu:Button1Down(Vector2.new(0, 0)); task.wait(0.01); vu:Button1Up(Vector2.new(0, 0))
         end
     end)
-end
-
-local C_Bg=Color3.fromRGB(18,18,24); local C_Side=Color3.fromRGB(24,24,32)
+    endlocal C_Bg=Color3.fromRGB(18,18,24); local C_Side=Color3.fromRGB(24,24,32)
 local C_Card=Color3.fromRGB(30,32,44); local C_Accent=Color3.fromRGB(255,180,0)
 local C_Green=Color3.fromRGB(80,200,80); local C_Text=Color3.fromRGB(240,240,245)
 local C_Gray=Color3.fromRGB(140,145,165); local C_Off=Color3.fromRGB(50,52,68)
@@ -241,8 +205,7 @@ local statusLbl
 local function safeClick(b, f)
     local busy = false
     b.Activated:Connect(function()
-        if busy then return end
-        busy = true
+        if busy then return end; busy = true
         local ok, err = pcall(f); if not ok then warn("[UI Error]:", err) end
         task.wait(0.12); busy = false
     end)
@@ -264,7 +227,9 @@ local function drag(h, t)
     end)
 end
 
-local function setStatus(txt) if statusLbl then statusLbl.Text = "Status : " .. tostring(txt) end end local gui = Instance.new("ScreenGui")
+local function setStatus(txt) if statusLbl then statusLbl.Text = "Status : " .. tostring(txt) end end
+
+local gui = Instance.new("ScreenGui")
 gui.Name = "StringtrapHub"; gui.ResetOnSpawn = false; gui.Parent = pGui
 
 local statusBar = Instance.new("Frame")
@@ -338,7 +303,7 @@ safeClick(photo, function() mf.Visible = not mf.Visible end)
 safeClick(kb, function()
     if ki.Text == KEY or autoReload then
         cfg.unlocked = true; kf.Visible = false; mf.Visible = true; photo.Visible = true
-        statusBar.Visible = cfg.showStatusBar; setStatus(autoReload and "Auto-Reloaded (Anti-Ban)" or "Idle")
+        statusBar.Visible = cfg.showStatusBar; setStatus(autoReload and "Auto-Reloaded" or "Idle")
     else
         kb.Text = "INVALID KEY"; task.wait(1); kb.Text = "LOAD STRINGTRAP HUB"
     end
@@ -346,10 +311,9 @@ end)
 
 if autoReload then
     cfg.unlocked = true; kf.Visible = false; mf.Visible = true; photo.Visible = true
-    statusBar.Visible = cfg.showStatusBar; setStatus("Auto-Reloaded (Anti-Ban)")
-end local side = Instance.new("Frame")
-side.Size = UDim2.new(0,150,1,-46); side.Position = UDim2.new(0,6,0,40)
-side.BackgroundColor3 = C_Side; side.Parent = mf
+    statusBar.Visible = cfg.showStatusBar; setStatus("Auto-Reloaded")
+        endlocal side = Instance.new("Frame")
+side.Size = UDim2.new(0,150,1,-46); side.Position = UDim2.new(0,6,0,40); side.BackgroundColor3 = C_Side; side.Parent = mf
 Instance.new("UICorner", side).CornerRadius = UDim.new(0,6)
 
 local sl = Instance.new("UIListLayout", side); sl.Padding = UDim.new(0,3); sl.SortOrder = Enum.SortOrder.LayoutOrder
@@ -391,8 +355,7 @@ local function addSection(parent, txt)
     Instance.new("UICorner", f).CornerRadius = UDim.new(0,4)
     local l = Instance.new("TextLabel", f)
     l.Size = UDim2.new(1,-10,1,0); l.Position = UDim2.new(0,8,0,0); l.BackgroundTransparency = 1
-    l.Text = txt; l.TextColor3 = C_Accent; l.Font = Enum.Font.GothamBlack
-    l.TextSize = 10; l.TextXAlignment = Enum.TextXAlignment.Left
+    l.Text = txt; l.TextColor3 = C_Accent; l.Font = Enum.Font.GothamBlack; l.TextSize = 10; l.TextXAlignment = Enum.TextXAlignment.Left
 end
 
 local function addT(parent, txt, key, onToggle)
@@ -457,135 +420,101 @@ end
 
 local pageHalloween = createCh("Halloween Event", 1)
 local pageFarming   = createCh("Farming", 2)
-local pageSettings  = createCh("Settings & FastAttack", 3)
-local pageLocal     = createCh("LocalPlayer", 4)
-local pageShop      = createCh("Shop & Items", 5) addSection(pageHalloween, "Halloween Event 2026")
+local pageSettings  = createCh("Settings", 3)addSection(pageHalloween, "Halloween Event 2026")
 addT(pageHalloween, "Auto Halloween Event", "autoHalloweenEvent")
 addT(pageHalloween, "Farm Pumpkins (Fast)", "farmPumpkins")
-addT(pageHalloween, "Prioritize Boss Great Pumpkin", "prioritizeBossGreatPumpkin")
-addT(pageHalloween, "Skip Jack o' Lantern (Farm Cepat)", "skipJackOfLantern")
-addT(pageHalloween, "Auto Trick or Treat (BUG / Fast)", "autoTrickOrTreat")
-addT(pageHalloween, "Auto Great Pumpkin [Farm + Boss]", "autoGreatPumpkinBoss")
-addT(pageHalloween, "Summon Great Pumpkin (Beta)", "summonGreatPumpkin")
-addSection(pageHalloween, "Spooky Gacha & Rolls")
+addT(pageHalloween, "Auto Trick or Treat", "autoTrickOrTreat")
+addT(pageHalloween, "Summon Great Pumpkin", "summonGreatPumpkin")
+addSection(pageHalloween, "Spooky Gacha")
 addT(pageHalloween, "Auto Gacha Halloween", "autoGachaHalloween")
 addT(pageHalloween, "Auto Roll Spooky Gacha", "autoRollSpookyGacha")
 addT(pageHalloween, "Auto Close Gacha UI", "autoCloseGachaUI")
 addT(pageHalloween, "Spooky Gacha: Allow Silver Key", "spookyGachaAllowSilverKey")
 addActionBtn(pageHalloween, "Open Spooky Gacha (Vendor)", function() invokeCommF("HalloweenGacha", "Open") end)
-addSection(pageHalloween, "Pumpkin Breaking & Secrets")
-addT(pageHalloween, "Auto Candy Grave / Pumpkin Hunt", "autoCandyGravePumpkinHunt")
-addT(pageHalloween, "Auto Break Grave [Unlock Egg]", "autoBreakGraveUnlockEgg")
-addT(pageHalloween, "Sweet Riddle Solver (Pumpkin Key)", "sweetRiddleSolver")
-addT(pageHalloween, "Mystery Hall Solver", "mysteryHallSolver")
-addT(pageHalloween, "Witch Cauldron Auto", "witchCauldronAuto")
-addT(pageHalloween, "Travel via Halloween Portal", "travelViaHalloweenPortal")
-addSection(pageHalloween, "Magnet Event Update 30")
-addT(pageHalloween, "Auto Farm Magnet Token", "autoFarmMagnetToken")
-addT(pageHalloween, "Auto Roll Magnet Gacha", "autoRollMagnetGacha")
 
-addSection(pageFarming, "Auto Farm Level (Fix Auto Quest)")
+addSection(pageFarming, "Auto Farm Level")
 addDropdown(pageFarming, "Select Weapon:", {"Melee", "Sword", "Gun", "Fruit"}, "selectedWeapon", function(v) cfg.selectedWeapon = v end, true)
-addT(pageFarming, "Start Farm (Auto Quest + Mob)", "startFarm", function(on) setStatus(on and "Farm Level Ativado" or "Idle") end)
+addT(pageFarming, "Start Farm (Auto Quest)", "startFarm", function(on) setStatus(on and "Farm Ativado" or "Idle") end)
 addT(pageFarming, "Accept Quests Automático", "autoQuest")
-addT(pageFarming, "Auto Equip Weapon", "autoEquipWeapon")
-addT(pageFarming, "Bring Mobs (Agrupar Inimigos)", "bringMobs")
-addT(pageFarming, "Auto Turn On Buso (Haki)", "autoTurnOnBuso")
-addT(pageFarming, "Auto Ken (Observation)", "autoKen")
-addSection(pageFarming, "Mastery Farm")
-addDropdown(pageFarming, "Mastery Method:", {"Melee", "Sword", "Gun", "Fruit"}, "masteryMethod", function(v) cfg.masteryMethod = v end, true)
-addT(pageFarming, "Farm Mastery", "farmMastery")
+addT(pageFarming, "Bring Mobs", "bringMobs")
+addT(pageFarming, "Auto Turn On Buso", "autoTurnOnBuso")
 
-addSection(pageSettings, "Fast Attack & Click (Delta Safe)")
+addSection(pageSettings, "Fast Attack & Click")
 addT(pageSettings, "Enable Fast Attack", "fastAttack")
 addT(pageSettings, "Auto Click (Continuous)", "autoClick")
-addT(pageSettings, "Attack No Animation", "attackNoAnim")
 addDropdown(pageSettings, "Fast Attack Delay:", {"0.05", "0.08", "0.1", "0.15", "0.2"}, "fastAttackDelay", function(v) cfg.fastAttackDelay = tonumber(v) end, true)
-addSection(pageSettings, "Render & Otimização")
-addT(pageSettings, "White Screen / Fast Mode", "fastMode", function(on)
-    for _, v in ipairs(pGui:GetChildren()) do if v:IsA("ScreenGui") and v ~= gui then v.Enabled = not on end end
-end)
-addT(pageSettings, "Disable 3D Rendering", "noRender", function(on) runS:Set3dRenderingEnabled(not on) end)
+addT(pageSettings, "Noclip", "noclip")
 addActionBtn(pageSettings, "Server Hop", function()
-    setStatus("Buscando servidor...")
-    task.spawn(function() local ok, info = hopServer(); setStatus(ok and ("Hopping -> " .. info) or ("Falha: " .. info)) end)
+    setStatus("Searching..."); task.spawn(function() local ok, info = hopServer(); setStatus(ok and ("Hopping -> " .. info) or ("Falha: " .. info)) end)
 end)
-
-addSection(pageLocal, "Movement & Player")
-addT(pageLocal, "Noclip", "noclip")
-addDropdown(pageLocal, "Select Team:", {"Pirates", "Marines"}, "selectedTeam", function(v) cfg.selectedTeam = v; invokeCommF("SetTeam", v) end, true)
-
-addSection(pageShop, "Abilities")
-addActionBtn(pageShop, "Skyjump [10,000 Beli]", function() invokeCommF("BuyHaki", "Geppo") end)
-addActionBtn(pageShop, "Buso Haki [25,000 Beli]", function() invokeCommF("BuyHaki", "Buso") end)
-addActionBtn(pageShop, "Observation [750,000 Beli]", function() invokeCommF("BuyHaki", "Observation") end)
-addActionBtn(pageShop, "Soru [100,000 Beli]", function() invokeCommF("BuyHaki", "Soru") end)
 
 task.spawn(function()
     while true do
         task.wait(cfg.fastAttackDelay or 0.08)
-        if (cfg.autoClick or cfg.startFarm or cfg.farmPumpkins or cfg.autoGreatPumpkinBoss or cfg.autoHalloweenEvent) and cfg.fastAttack then doFastAttack() end
+        if (cfg.autoClick or cfg.startFarm or cfg.farmPumpkins or cfg.autoHalloweenEvent) and cfg.fastAttack then doFastAttack() end
     end
 end)
 
 task.spawn(function()
-    while task.wait(0.4) do
+    local questCooldown = 0
+    while task.wait(0.5) do
         if cfg.startFarm and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local myHrp = p.Character.HumanoidRootPart
-            local myHum = p.Character:FindFirstChildOfClass("Humanoid")
-            if myHum and myHum.Health > 0 then
-                local quest = getCurrentQuest()
-                if cfg.autoQuest and not hasActiveQuest() then
-                    setStatus("Pegando Quest: " .. quest[2])
-                    local distNpc = (myHrp.Position - quest[3].Position).Magnitude
-                    if distNpc > 15 then myHrp.CFrame = quest[3] + Vector3.new(0, 5, 0); task.wait(0.3) end
-                    invokeCommF("StartQuest", quest[2], quest[6]); task.wait(0.5)
-                else
-                    local targetMob = nil; local enemies = getEnemies()
-                    if enemies then
-                        for _, mob in pairs(enemies:GetChildren()) do
-                            if (mob.Name == quest[4] or string.find(mob.Name, quest[4])) and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 then
-                                targetMob = mob; break
-                            end
-                        end
-                    end
-                    if targetMob then
-                        local mobHrp = targetMob.HumanoidRootPart
-                        myHrp.CFrame = mobHrp.CFrame * CFrame.new(0, 18, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-                        setStatus("Matando: " .. quest[4])
-                        if cfg.bringMobs and enemies then
-                            for _, otherMob in pairs(enemies:GetChildren()) do
-                                if otherMob ~= targetMob and otherMob.Name == targetMob.Name and otherMob:FindFirstChild("HumanoidRootPart") and otherMob:FindFirstChildOfClass("Humanoid") and otherMob:FindFirstChildOfClass("Humanoid").Health > 0 then
-                                    if (otherMob.HumanoidRootPart.Position - mobHrp.Position).Magnitude <= 200 then
-                                        otherMob.HumanoidRootPart.CFrame = mobHrp.CFrame; otherMob.HumanoidRootPart.CanCollide = false
-                                    end
-                                end
-                            end
-                        end
-                    else
-                        setStatus("Indo ao spawn de: " .. quest[4]); myHrp.CFrame = quest[5] + Vector3.new(0, 25, 0)
+            local quest = getCurrentQuest()
+            
+            if cfg.autoQuest and tick() > questCooldown then
+                setStatus("Pegando Quest: " .. quest[2])
+                absoluteTP(myHrp, quest[3] + Vector3.new(0, 5, 0))
+                task.wait(0.5)
+                invokeCommF("StartQuest", quest[2], quest[6])
+                questCooldown = tick() + 10 
+            end
+
+            local targetMob = nil; local enemies = getEnemies()
+            if enemies then
+                for _, mob in pairs(enemies:GetChildren()) do
+                    if (mob.Name == quest[4] or string.find(mob.Name, quest[4])) and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 then
+                        targetMob = mob; break
                     end
                 end
+            end
+
+            if targetMob then
+                local mobHrp = targetMob.HumanoidRootPart
+                absoluteTP(myHrp, mobHrp.CFrame * CFrame.new(0, 18, 0) * CFrame.Angles(math.rad(-90), 0, 0))
+                setStatus("Matando: " .. quest[4])
+
+                if cfg.bringMobs and enemies then
+                    for _, otherMob in pairs(enemies:GetChildren()) do
+                        if otherMob ~= targetMob and otherMob.Name == targetMob.Name and otherMob:FindFirstChild("HumanoidRootPart") and otherMob:FindFirstChildOfClass("Humanoid") and otherMob:FindFirstChildOfClass("Humanoid").Health > 0 then
+                            if (otherMob.HumanoidRootPart.Position - mobHrp.Position).Magnitude <= 200 then
+                                otherMob.HumanoidRootPart.CFrame = mobHrp.CFrame; otherMob.HumanoidRootPart.CanCollide = false
+                            end
+                        end
+                    end
+                end
+            else
+                setStatus("Indo ao spawn de: " .. quest[4])
+                absoluteTP(myHrp, quest[5] + Vector3.new(0, 25, 0))
             end
         end
     end
 end)
 
 task.spawn(function()
-    while task.wait(0.5) do
-        if (cfg.farmPumpkins or cfg.autoHalloweenEvent) and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local myHrp = p.Character.HumanoidRootPart; local pumpkinTarget = nil; local enemies = getEnemies()
+    while task.wait(1) do
+        if cfg.farmPumpkins and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local myHrp = p.Character.HumanoidRootPart; local enemies = getEnemies()
             if enemies then
                 for _, obj in pairs(enemies:GetChildren()) do
                     if string.find(string.lower(obj.Name), "pumpkin") or string.find(string.lower(obj.Name), "jack") then
                         local primary = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                        if primary then pumpkinTarget = primary; break end
+                        if primary then
+                            setStatus("Quebrando Abóbora..."); absoluteTP(myHrp, primary.CFrame * CFrame.new(0, 8, 0))
+                            invokeCommF("HalloweenEvent", "HitPumpkin", primary); break
+                        end
                     end
                 end
-            end
-            if pumpkinTarget then
-                setStatus("Quebrando Abóbora..."); myHrp.CFrame = pumpkinTarget.CFrame * CFrame.new(0, 8, 0)
-                pcall(function() invokeCommF("HalloweenEvent", "HitPumpkin", pumpkinTarget) end)
             end
         end
         if cfg.autoRollSpookyGacha or cfg.autoGachaHalloween then
@@ -602,40 +531,25 @@ end)
 
 runS.Stepped:Connect(function()
     if cfg.noclip and p.Character then
-        for _, part in pairs(p.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
-        end
+        for _, part in pairs(p.Character:GetDescendants()) do if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end end
     end
 end)
 
 task.spawn(function()
-    while task.wait(3) do
-        if cfg.autoTurnOnBuso and p.Character and not p.Character:FindFirstChild("HasBuso") then invokeCommF("Buso") end
-    end
+    while task.wait(3) do if cfg.autoTurnOnBuso and p.Character and not p.Character:FindFirstChild("HasBuso") then invokeCommF("Buso") end end
 end)
 
 task.spawn(function()
-    task.wait(15)
-    local nextHop = math.random(ANTIBAN_MIN * 60, ANTIBAN_MAX * 60); local startedAt = tick()
+    task.wait(15); local nextHop = math.random(ANTIBAN_MIN * 60, ANTIBAN_MAX * 60); local startedAt = tick()
     while true do
-        task.wait(1)
-        local elapsed = tick() - startedAt; local remaining = math.max(0, math.floor(nextHop - elapsed))
-        if cfg.showStatusBar and remaining % 30 == 0 and remaining > 0 then
-            setStatus(string.format("Anti-Ban: Hop em %02d:%02d", math.floor(remaining / 60), remaining % 60))
-        end
+        task.wait(1); local elapsed = tick() - startedAt
         if elapsed >= nextHop then
             setStatus("Anti-Ban: Trocando de servidor...")
             if ANTIBAN_URL and ANTIBAN_URL ~= "" then
-                local src = string.format([=[
-getgenv().StringtrapHub_AutoReload = true
-local success, result = pcall(function() return loadstring(game:HttpGet("%s"))() end)
-if not success then warn("Reload error:", result) end
-                ]=], ANTIBAN_URL)
-                local qOk, qErr = queueTeleport(src)
-                if not qOk then task.wait(30); nextHop = math.random(ANTIBAN_MIN * 60, ANTIBAN_MAX * 60); startedAt = tick(); continue end
+                local src = string.format([=[getgenv().StringtrapHub_AutoReload = true; local ok,err=pcall(function() return loadstring(game:HttpGet("%s"))() end); if not ok then warn("Error:",err) end]=], ANTIBAN_URL)
+                queueTeleport(src)
             end
-            local ok, info = hopServer(); if not ok then task.wait(30) end
-            nextHop = math.random(ANTIBAN_MIN * 60, ANTIBAN_MAX * 60); startedAt = tick()
+            hopServer(); nextHop = math.random(ANTIBAN_MIN * 60, ANTIBAN_MAX * 60); startedAt = tick()
         end
     end
 end)
