@@ -1,16 +1,15 @@
 -- ============================================================
---  STRINGTRAP HUB - UPDATE 30 / HALLOWEEN 2026 (FIXED)
+--  STRINGTRAP HUB - BLOX FRUITS (UPDATE 30 / HALLOWEEN 2026)
+--  Compatível com Delta Executor & Mobile (FIXED PRO)
 -- ============================================================
 local ANTIBAN_URL = "https://raw.githubusercontent.com/contadeteste9013-a11y/stringtrap-hub/refs/heads/main/stringtrap.lua"
 local ANTIBAN_MIN = 30
 local ANTIBAN_MAX = 40
 
 if not game:IsLoaded() then game.Loaded:Wait() end
-
 local Players = game:GetService("Players")
 local uis     = game:GetService("UserInputService")
 local vim     = game:GetService("VirtualInputManager")
-local ts      = game:GetService("TweenService")
 local rs      = game:GetService("ReplicatedStorage")
 local vu      = game:GetService("VirtualUser")
 local runS    = game:GetService("RunService")
@@ -21,11 +20,9 @@ if pGui:FindFirstChild("StringtrapHub") then pGui.StringtrapHub:Destroy() end
 local getgenv = getgenv or function() return _G end
 
 local cfg = {
-    unlocked = false, showStatusBar = true, selectedWeapon = "Melee",
-    fastAttack = true, fastAttackDelay = 0.08, attackNoAnim = true,
-    autoClick = false, autoTurnOnBuso = true, autoKen = false,
-    startFarm = false, autoQuest = true, autoEquipWeapon = true,
-    bringMobs = true, distanceFarmAura = 300, farmMastery = false,
+    unlocked = false, showStatusBar = true, selectedWeapon = "Melee", fastAttack = true, fastAttackDelay = 0.08,
+    attackNoAnim = true, autoClick = false, autoTurnOnBuso = true, autoKen = false,
+    startFarm = false, autoQuest = true, bringMobs = true, farmMastery = false,
     farmPumpkins = false, autoHalloweenEvent = false, autoTrickOrTreat = false,
     autoGachaHalloween = false, autoRollSpookyGacha = false, spookyGachaAllowSilverKey = false,
     autoCloseGachaUI = true, summonGreatPumpkin = false,
@@ -36,9 +33,7 @@ local KEY = "williamafton2026"
 local IMG = "rbxassetid://77611955682353"
 
 local autoReload = false
-if getgenv().StringtrapHub_AutoReload == true then
-    autoReload = true; getgenv().StringtrapHub_AutoReload = nil
-end
+if getgenv().StringtrapHub_AutoReload == true then autoReload = true; getgenv().StringtrapHub_AutoReload = nil end
 
 local function queueTeleport(source)
     local qot = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
@@ -52,21 +47,25 @@ local function hopServer()
     local ok, res = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
-    if not ok or not res or not res.data then
-        pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin"
-    end
+    if not ok or not res or not res.data then pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin" end
     local candidates = {}
     for _, s in ipairs(res.data) do
         if s.id ~= game.JobId and s.playing < s.maxPlayers then table.insert(candidates, s) end
     end
-    if #candidates == 0 then
-        pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin"
-    end
+    if #candidates == 0 then pcall(function() TeleportService:Teleport(game.PlaceId, p) end); return true, "rejoin" end
     table.sort(candidates, function(a, b) return a.playing < b.playing end)
     local target = candidates[1]
     local hopOk, hopErr = pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, target.id, p) end)
     if not hopOk then return false, tostring(hopErr) end
     return true, target.playing .. "/" .. target.maxPlayers
+end
+
+-- TELEPORTE BLINDADO
+local function absoluteTP(hrp, targetCFrame)
+    pcall(function() hrp:SetNetworkOwner(p) end)
+    hrp.CFrame = targetCFrame
+    hrp.Velocity = Vector3.new(0, 0, 0)
+    hrp.RotVelocity = Vector3.new(0, 0, 0)
 end
 
 local function getEnemies() return workspace:FindFirstChild("Enemies") end
@@ -77,13 +76,7 @@ local function invokeCommF(...)
     return false, "CommF_ não encontrado"
 end
 
--- TELEPORTE BLINDADO (Evita o personagem voltar/tremer)
-local function absoluteTP(hrp, targetCFrame)
-    pcall(function() hrp:SetNetworkOwner(p) end)
-    hrp.CFrame = targetCFrame
-    hrp.Velocity = Vector3.new(0, 0, 0)
-    hrp.RotVelocity = Vector3.new(0, 0, 0)
-endlocal QuestsData = {
+local QuestsData = {
     {1, "BanditQuest1", CFrame.new(1059, 16, 1549), "Bandit", CFrame.new(1145, 17, 1630), 1},
     {10, "JungleQuest", CFrame.new(-1598, 36, 153), "Monkey", CFrame.new(-1442, 61, 38), 1},
     {15, "JungleQuest", CFrame.new(-1598, 36, 153), "Gorilla", CFrame.new(-1240, 6, -490), 2},
@@ -121,29 +114,22 @@ endlocal QuestsData = {
     {1975, "HauntedQuest1", CFrame.new(-9515, 142, 6078), "Reborn Skeleton", CFrame.new(-9504, 172, 6050), 1},
     {2075, "TreatQuest1", CFrame.new(-2020, 38, -12026), "Cookie Crafter", CFrame.new(-1900, 38, -11900), 1},
     {2450, "TikiQuest1", CFrame.new(-16547, 55, -173), "Isle Outlaw", CFrame.new(-16400, 55, -100), 1},
-}
-
-local function getPlayerLevel()
-    local d = p:FindFirstChild("Data")
-    if d and d:FindFirstChild("Level") then return d.Level.Value end
-    return 1
+}local function getPlayerLevel()
+    local ok, lvl = pcall(function() return p.Data.Level.Value end)
+    return (ok and lvl) or 1
 end
 
 local function getCurrentQuest()
     local myLvl = getPlayerLevel()
     local best = QuestsData[1]
-    for _, q in ipairs(QuestsData) do
-        if myLvl >= q[1] then best = q else break end
-    end
+    for _, q in ipairs(QuestsData) do if myLvl >= q[1] then best = q else break end end
     return best
 end
 
 local function hasActiveQuest()
-    local pData = p:FindFirstChild("PlayerGui")
-    if pData and pData:FindFirstChild("Main") and pData.Main:FindFirstChild("Quest") then
-        return pData.Main.Quest.Visible
-    end
-    return false
+    local active = false
+    pcall(function() if pGui.Main.Quest and pGui.Main.Quest.Visible then active = true end end)
+    return active
 end
 
 local function equipTool()
@@ -166,6 +152,16 @@ local function doFastAttack()
     if not p.Character or not p.Character:FindFirstChild("HumanoidRootPart") then return end
     equipTool()
 
+    -- Bypass do CombatFramework
+    pcall(function()
+        local CombatFramework = require(p.PlayerScripts:WaitForChild("CombatFramework"))
+        local Framework = CombatFramework.Framework
+        if Framework then
+            Framework.attackTime = 0
+            if Framework.attacking == false then Framework:CreateHitbox() end
+        end
+    end)
+
     local hitTargets = {}
     local hrp = p.Character.HumanoidRootPart
     local enemies = getEnemies()
@@ -182,21 +178,28 @@ local function doFastAttack()
 
     if #hitTargets > 0 then
         pcall(function()
-            if p.Character:FindFirstChildOfClass("Tool") then
-                if rs.Remotes:FindFirstChild("Validator") then rs.Remotes.Validator:FireServer(math.floor(tick())) end
+            local activeTool = p.Character:FindFirstChildOfClass("Tool")
+            if activeTool then
+                if rs.Remotes:FindFirstChild("Validator") then
+                    rs.Remotes.Validator:FireServer(math.floor(tick()))
+                end
                 local hitRemote = rs:FindFirstChild("Hit", true) or rs.Remotes:FindFirstChild("RegisterHit")
                 if hitRemote then hitRemote:FireServer(hitTargets[1], hitTargets) end
             end
         end)
     end
+
     pcall(function()
         if vim and vim.SendMouseButtonEvent then
-            vim:SendMouseButtonEvent(0, 0, 0, true, game, 1); task.wait(0.01); vim:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+            vim:SendMouseButtonEvent(0, 0, 0, true, game, 1); vim:SendMouseButtonEvent(0, 0, 0, false, game, 1)
         elseif vu and vu.Button1Down then
-            vu:Button1Down(Vector2.new(0, 0)); task.wait(0.01); vu:Button1Up(Vector2.new(0, 0))
+            vu:Button1Down(Vector2.new(0, 0)); vu:Button1Up(Vector2.new(0, 0))
         end
     end)
-    endlocal C_Bg=Color3.fromRGB(18,18,24); local C_Side=Color3.fromRGB(24,24,32)
+end
+
+-- UI VARIABLES & HELPERS
+local C_Bg=Color3.fromRGB(18,18,24); local C_Side=Color3.fromRGB(24,24,32)
 local C_Card=Color3.fromRGB(30,32,44); local C_Accent=Color3.fromRGB(255,180,0)
 local C_Green=Color3.fromRGB(80,200,80); local C_Text=Color3.fromRGB(240,240,245)
 local C_Gray=Color3.fromRGB(140,145,165); local C_Off=Color3.fromRGB(50,52,68)
@@ -227,9 +230,7 @@ local function drag(h, t)
     end)
 end
 
-local function setStatus(txt) if statusLbl then statusLbl.Text = "Status : " .. tostring(txt) end end
-
-local gui = Instance.new("ScreenGui")
+local function setStatus(txt) if statusLbl then statusLbl.Text = "Status : " .. tostring(txt) end endlocal gui = Instance.new("ScreenGui")
 gui.Name = "StringtrapHub"; gui.ResetOnSpawn = false; gui.Parent = pGui
 
 local statusBar = Instance.new("Frame")
@@ -312,10 +313,9 @@ end)
 if autoReload then
     cfg.unlocked = true; kf.Visible = false; mf.Visible = true; photo.Visible = true
     statusBar.Visible = cfg.showStatusBar; setStatus("Auto-Reloaded")
-        endlocal side = Instance.new("Frame")
+    endlocal side = Instance.new("Frame")
 side.Size = UDim2.new(0,150,1,-46); side.Position = UDim2.new(0,6,0,40); side.BackgroundColor3 = C_Side; side.Parent = mf
 Instance.new("UICorner", side).CornerRadius = UDim.new(0,6)
-
 local sl = Instance.new("UIListLayout", side); sl.Padding = UDim.new(0,3); sl.SortOrder = Enum.SortOrder.LayoutOrder
 local sp = Instance.new("UIPadding", side); sp.PaddingTop = UDim.new(0,6); sp.PaddingLeft = UDim.new(0,6); sp.PaddingRight = UDim.new(0,6)
 
@@ -420,7 +420,9 @@ end
 
 local pageHalloween = createCh("Halloween Event", 1)
 local pageFarming   = createCh("Farming", 2)
-local pageSettings  = createCh("Settings", 3)addSection(pageHalloween, "Halloween Event 2026")
+local pageSettings  = createCh("Settings", 3)
+
+addSection(pageHalloween, "Halloween Event 2026")
 addT(pageHalloween, "Auto Halloween Event", "autoHalloweenEvent")
 addT(pageHalloween, "Farm Pumpkins (Fast)", "farmPumpkins")
 addT(pageHalloween, "Auto Trick or Treat", "autoTrickOrTreat")
@@ -451,13 +453,15 @@ end)
 task.spawn(function()
     while true do
         task.wait(cfg.fastAttackDelay or 0.08)
-        if (cfg.autoClick or cfg.startFarm or cfg.farmPumpkins or cfg.autoHalloweenEvent) and cfg.fastAttack then doFastAttack() end
+        if (cfg.autoClick or cfg.startFarm or cfg.farmPumpkins or cfg.autoHalloweenEvent) and cfg.fastAttack then 
+            pcall(doFastAttack) 
+        end
     end
 end)
 
 task.spawn(function()
     local questCooldown = 0
-    while task.wait(0.5) do
+    while task.wait(0.4) do
         if cfg.startFarm and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local myHrp = p.Character.HumanoidRootPart
             local quest = getCurrentQuest()
@@ -465,7 +469,7 @@ task.spawn(function()
             if cfg.autoQuest and tick() > questCooldown then
                 setStatus("Pegando Quest: " .. quest[2])
                 absoluteTP(myHrp, quest[3] + Vector3.new(0, 5, 0))
-                task.wait(0.5)
+                task.wait(0.3)
                 invokeCommF("StartQuest", quest[2], quest[6])
                 questCooldown = tick() + 10 
             end
@@ -479,11 +483,11 @@ task.spawn(function()
                 end
             end
 
-            if targetMob then
+            if targetMob and targetMob:FindFirstChild("HumanoidRootPart") then
                 local mobHrp = targetMob.HumanoidRootPart
-                absoluteTP(myHrp, mobHrp.CFrame * CFrame.new(0, 18, 0) * CFrame.Angles(math.rad(-90), 0, 0))
                 setStatus("Matando: " .. quest[4])
-
+                absoluteTP(myHrp, mobHrp.CFrame * CFrame.new(0, 18, 0) * CFrame.Angles(math.rad(-90), 0, 0))
+                
                 if cfg.bringMobs and enemies then
                     for _, otherMob in pairs(enemies:GetChildren()) do
                         if otherMob ~= targetMob and otherMob.Name == targetMob.Name and otherMob:FindFirstChild("HumanoidRootPart") and otherMob:FindFirstChildOfClass("Humanoid") and otherMob:FindFirstChildOfClass("Humanoid").Health > 0 then
@@ -502,26 +506,28 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-    while task.wait(1) do
+    while task.wait(0.5) do
         if cfg.farmPumpkins and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local myHrp = p.Character.HumanoidRootPart; local enemies = getEnemies()
+            local myHrp = p.Character.HumanoidRootPart; local pumpkinTarget = nil; local enemies = getEnemies()
             if enemies then
                 for _, obj in pairs(enemies:GetChildren()) do
                     if string.find(string.lower(obj.Name), "pumpkin") or string.find(string.lower(obj.Name), "jack") then
                         local primary = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                        if primary then
-                            setStatus("Quebrando Abóbora..."); absoluteTP(myHrp, primary.CFrame * CFrame.new(0, 8, 0))
-                            invokeCommF("HalloweenEvent", "HitPumpkin", primary); break
-                        end
+                        if primary then pumpkinTarget = primary; break end
                     end
                 end
+            end
+            if pumpkinTarget then
+                setStatus("Quebrando Abóbora...")
+                absoluteTP(myHrp, pumpkinTarget.CFrame * CFrame.new(0, 8, 0))
+                pcall(function() invokeCommF("HalloweenEvent", "HitPumpkin", pumpkinTarget) end)
+                pcall(doFastAttack)
             end
         end
         if cfg.autoRollSpookyGacha or cfg.autoGachaHalloween then
             invokeCommF("HalloweenGacha", "Roll", cfg.spookyGachaAllowSilverKey)
             if cfg.autoCloseGachaUI then
-                local gUi = pGui:FindFirstChild("SpookyGacha") or pGui:FindFirstChild("HalloweenUI")
-                if gUi then gUi.Enabled = false end
+                pcall(function() local gUi = pGui:FindFirstChild("SpookyGacha") or pGui:FindFirstChild("HalloweenUI"); if gUi then gUi.Enabled = false end end)
             end
         end
         if cfg.autoTrickOrTreat then invokeCommF("HalloweenEvent", "TrickOrTreat") end
